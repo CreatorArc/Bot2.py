@@ -21,7 +21,7 @@ def keep_alive():
 # -----------------------------------------------------------
 
 # ----------------- CONFIGURATION -----------------
-BOT_TOKEN = "8970397855:AAHjulP-kqODOFwPpATyiE29C6EFg1jy_68"
+BOT_TOKEN = "8970397855:AAEVDAOzusC8S0F4RRKa01nGWOv9rXcQ3cw"
 ADMIN_ID = 8800158361
 MAIN_CHANNEL_LINK = "https://t.me/Bl4ck_hamster"
 GROUP_INVITE_LINK = "https://t.me/+c_tXyHANcaczZWE9"  # Private Channel Link
@@ -193,7 +193,7 @@ def handle_payment_photo(message):
     else:
         bot.reply_to(message, "Pehle /start karke payment method select karein.")
 
-# 6. Admin Approval / Rejection Trigger (FIXED)
+# 6. Admin Approval / Rejection Trigger
 @bot.callback_query_handler(func=lambda call: call.data.startswith(("app_", "rej_")))
 def handle_admin_action(call):
     if call.from_user.id != ADMIN_ID:
@@ -208,7 +208,6 @@ def handle_admin_action(call):
             join_btn = types.InlineKeyboardMarkup()
             join_btn.add(types.InlineKeyboardButton("📢 Main Channel", url=MAIN_CHANNEL_LINK))
             
-            # Plain text message without Markdown parsing conflicts
             msg = (
                 "🎉 Payment Verified!\n\n"
                 f"Aapka Private Access Link:\n{GROUP_INVITE_LINK}"
