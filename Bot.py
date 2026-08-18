@@ -24,13 +24,14 @@ def keep_alive():
 BOT_TOKEN = "8970397855:AAEVDAOzusC8S0F4RRKa01nGWOv9rXcQ3cw"
 ADMIN_ID = 8800158361
 MAIN_CHANNEL_LINK = "https://t.me/Bl4ck_hamster"
-GROUP_INVITE_LINK = "https://t.me/+c_tXyHANcaczZWE9"  # Private Channel Link
-DEMO_VIDEO_LINK = "https://t.me/shjahshsbsb/10"       # Demo Video Link
+GROUP_INVITE_LINK = "https://t.me/+c_tXyHANcaczZWE9"
 
-# Photos ke link
+# Photos & Video Sources
 WELCOME_PHOTO_URL = "https://t.me/shjahshsbsb/12"
 UPI_QR_PHOTO_URL = "https://t.me/shjahshsbsb/5"
 USDT_QR_PHOTO_URL = "https://t.me/shjahshsbsb/6"
+DEMO_SOURCE_CHANNEL = "@shjahshsbsb"
+DEMO_MSG_ID = 10
 
 UPI_ID = "paytmqr2810050501011gv6cueh16my@paytm"
 USDT_ADDRESS = "0xb9784568555cd9b7b79178905e5581a0fde55e71"
@@ -79,7 +80,7 @@ def start_command(message):
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_inr = types.InlineKeyboardButton("🖼️ Buy Access (₹)", callback_data="pay_inr")
     btn_usd = types.InlineKeyboardButton("🖼️ Buy Access ($)", callback_data="pay_usd")
-    btn_demo = types.InlineKeyboardButton("📺 Demo video", url=DEMO_VIDEO_LINK)
+    btn_demo = types.InlineKeyboardButton("📺 Demo video", callback_data="send_demo_video")
     btn_channel = types.InlineKeyboardButton("📢 Main Channel", url=MAIN_CHANNEL_LINK)
     
     markup.add(btn_inr, btn_usd)
@@ -103,7 +104,28 @@ def start_command(message):
 
     send_safe_photo(message.chat.id, WELCOME_PHOTO_URL, welcome_text, markup)
 
-# Broadcast Command
+# 2. Demo Video Button Handler (Sends video directly to chat)
+@bot.callback_query_handler(func=lambda call: call.data == "send_demo_video")
+def handle_demo_video(call):
+    bot.answer_callback_query(call.id, "Sending demo video...")
+    try:
+        bot.copy_message(
+            chat_id=call.message.chat.id,
+            from_chat_id=DEMO_SOURCE_CHANNEL,
+            message_id=DEMO_MSG_ID
+        )
+    except Exception:
+        try:
+            bot.send_video(
+                call.message.chat.id,
+                video="https://t.me/shjahshsbsb/10",
+                caption="📺 *Demo Video*",
+                parse_mode="Markdown"
+            )
+        except Exception:
+            bot.send_message(call.message.chat.id, "❌ Demo video load nahi ho pa rahi hai. Kripya baad me prayas karein.")
+
+# 3. Broadcast Command
 @bot.message_handler(commands=['broadcast'])
 def broadcast(message):
     if message.from_user.id != ADMIN_ID:
@@ -126,7 +148,7 @@ def broadcast(message):
             pass
     bot.reply_to(message, f"✅ Broadcast sent to {count} users!")
 
-# 2. INR Button Handler
+# 4. INR Button Handler
 @bot.callback_query_handler(func=lambda call: call.data == "pay_inr")
 def process_inr(call):
     markup = types.InlineKeyboardMarkup()
@@ -146,7 +168,7 @@ def process_inr(call):
     send_safe_photo(call.message.chat.id, UPI_QR_PHOTO_URL, inr_text, markup)
     bot.answer_callback_query(call.id)
 
-# 3. USD ($) Button Handler
+# 5. USD ($) Button Handler
 @bot.callback_query_handler(func=lambda call: call.data == "pay_usd")
 def process_usd(call):
     markup = types.InlineKeyboardMarkup()
@@ -165,14 +187,14 @@ def process_usd(call):
     send_safe_photo(call.message.chat.id, USDT_QR_PHOTO_URL, usd_text, markup)
     bot.answer_callback_query(call.id)
 
-# 4. Request Screenshot Handler
+# 6. Request Screenshot Handler
 @bot.callback_query_handler(func=lambda call: call.data == "upload_proof")
 def ask_proof(call):
     waiting_screenshot.add(call.from_user.id)
     bot.send_message(call.message.chat.id, "Kripya apne payment ka screenshot yahan send karein 👇")
     bot.answer_callback_query(call.id)
 
-# 5. Handle Screenshot Upload & Forward to Admin
+# 7. Handle Screenshot Upload & Forward to Admin
 @bot.message_handler(content_types=['photo'])
 def handle_payment_photo(message):
     user_id = message.chat.id
@@ -193,7 +215,7 @@ def handle_payment_photo(message):
     else:
         bot.reply_to(message, "Pehle /start karke payment method select karein.")
 
-# 6. Admin Approval / Rejection Trigger
+# 8. Admin Approval / Rejection Trigger
 @bot.callback_query_handler(func=lambda call: call.data.startswith(("app_", "rej_")))
 def handle_admin_action(call):
     if call.from_user.id != ADMIN_ID:
