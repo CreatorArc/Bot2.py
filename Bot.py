@@ -193,7 +193,7 @@ def handle_payment_photo(message):
     else:
         bot.reply_to(message, "Pehle /start karke payment method select karein.")
 
-# 6. Admin Approval / Rejection Trigger (UPDATED BUTTON)
+# 6. Admin Approval / Rejection Trigger (FIXED)
 @bot.callback_query_handler(func=lambda call: call.data.startswith(("app_", "rej_")))
 def handle_admin_action(call):
     if call.from_user.id != ADMIN_ID:
@@ -206,16 +206,14 @@ def handle_admin_action(call):
     if action == "app":
         try:
             join_btn = types.InlineKeyboardMarkup()
-            # Button me Main Channel ka Public Link
             join_btn.add(types.InlineKeyboardButton("📢 Main Channel", url=MAIN_CHANNEL_LINK))
             
-            # Message body me Private channel invite link
-            bot.send_message(
-                target_user_id,
-                f"🎉 *Payment Verified!*\n\nAapka Private Access Link:\n{GROUP_INVITE_LINK}",
-                parse_mode="Markdown",
-                reply_markup=join_btn
+            # Plain text message without Markdown parsing conflicts
+            msg = (
+                "🎉 Payment Verified!\n\n"
+                f"Aapka Private Access Link:\n{GROUP_INVITE_LINK}"
             )
+            bot.send_message(target_user_id, msg, reply_markup=join_btn)
         except Exception as e:
             print(f"Error sending link to user: {e}")
 
